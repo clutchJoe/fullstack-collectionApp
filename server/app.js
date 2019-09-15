@@ -3,22 +3,65 @@ const bodyParser = require("body-parser");
 const Grid = require("gridfs-stream");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const expressLayouts = require("express-ejs-layouts");
+const session = require("express-session");
+const passport = require("passport");
+const methodOverride = require("method-override");
 
-const connectDB = require("./connectDB");
+const { checkAuthenticated } = require("./config/auth");
+
+const connectDB = require("./config/connectDB");
+// Connect to MongoDB
 connectDB();
 
 const app = express();
+const options = {
+    dotfiles: "deny",
+    redirect: false,
+    extensions: ["htm", "html"]
+};
 
-// Setup static floder
-app.use(express.static(__dirname + "/public/"));
+require("./config/passport")(passport);
+app.use(methodOverride("_method"));
+app.set("view engine", "ejs");
+app.use(expressLayouts);
 
 // Use Middleware
 app.use(cors());
 app.use(bodyParser.json());
-app.use("/post", require("./routes/posts"));
-app.use("/files", require("./routes/filesAPI.js"));
 
-// app.use(bodyParser.urlencoded({ extended: true }));
+//Express Session
+app.use(
+    session({
+        secret: "secret",
+        resave: true,
+        saveUninitialized: true
+    })
+);
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use("/", require("./routes/user"));
+app.use("/post", require("./routes/posts"));
+app.use("/files", require("./routes/filesAPI"));
+app.use("/notes", require("./routes/notesAPI"));
+app.use("/links", require("./routes/linkAPI"));
+
+// Setup static floder
+app.use(checkAuthenticated, express.static(__dirname + "/public/"));
+
+app.use((err, req, res, next) => {
+    if (err.code === "Incorrect File Type") {
+        res.status(422).json({ error: "Only file are allowed!" });
+        return;
+    }
+    if (err.code === "Incorrect Image File Type") {
+        res.status(422).json({ error: "Only image are allowed!" });
+        return;
+    }
+});
 
 const conn = mongoose.connection;
 // Init gfs
@@ -29,9 +72,7 @@ conn.once("open", () => {
     gfs.collection("uploads");
 });
 
-app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/public/index.html");
-});
+// app.get("/", checkAuthenticated, (req, res) => res.sendFile(__dirname + "/public/dist/index.html"));
 
 app.get("/image/:filename", (req, res) => {
     gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
@@ -42,23 +83,29 @@ app.get("/image/:filename", (req, res) => {
             });
         }
         // Check if image
-        if (
-            file.contentType === "image/jpeg" ||
-            file.contentType === "image/png" ||
-            file.contentType === "image/gif" ||
-            file.contentType === "image/svg+xml" ||
-            file.contentType === "image/x-icon"
-        ) {
+        const allowTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/svg+xml", "image/x-icon"];
+        if (allowTypes.includes(file.contentType)) {
             // Read output to browser
             const readstream = gfs.createReadStream(file.filename);
             readstream.pipe(res);
         } else {
-            res.status(404).json({
-                err: "Not an image"
-            });
+            res.status(404).send('err: "Not an image"');
         }
     });
 });
+
+// app.get("/see/:filename", (req, res) => {
+//     gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
+//         if (!file || file.length === 0) {
+//             return res.status(404).json({
+//                 err: "No file exists"
+//             });
+//         }
+//         const readstream = gfs.createReadStream(file.filename);
+//         console.log(readstream);
+//         readstream.pipe(res);
+//     });
+// });
 
 app.delete("/files/:id", (req, res) => {
     gfs.remove({ _id: req.params.id, root: "uploads" }, (err, gridStore) => {

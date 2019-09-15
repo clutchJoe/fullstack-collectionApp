@@ -26,7 +26,29 @@ const storage = new GridFsStorage({
         });
     }
 });
-const upload = multer({ storage });
+
+const allowTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/svg+xml", "image/x-icon"];
+
+const fileFilter = (req, file, cb) => {
+    if (allowTypes.includes(file.mimetype)) {
+        const error = new Error("Incorrect File");
+        error.code = "Incorrect File Type";
+        return cb(error, false);
+    }
+    cb(null, true);
+};
+
+const imageFilter = (req, file, cb) => {
+    if (!allowTypes.includes(file.mimetype)) {
+        const error = new Error("Incorrect Image File");
+        error.code = "Incorrect Image File Type";
+        return cb(error, false);
+    }
+    cb(null, true);
+};
+
+const fileUpload = multer({ storage, fileFilter });
+const imageUpload = multer({ storage, fileFilter: imageFilter });
 
 // save in local storage
 // const storage = multer.diskStorage({
@@ -37,4 +59,4 @@ const upload = multer({ storage });
 // });
 // const upload = multer({ storage });
 
-module.exports = upload;
+module.exports = { fileUpload, imageUpload };
