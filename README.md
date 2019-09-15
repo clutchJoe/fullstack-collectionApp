@@ -22,7 +22,7 @@ npm install
 npm start
 ```
 
-[client]()
+[client](https://github.com/clutchJoe/collectionApp-client)
 
 ## 说明
 
@@ -33,6 +33,8 @@ npm start
 前端使用 Vue 并且配合 Vuex 进行构建，同时使用 Bootstrap 作为 CSS 框架，实现页面响应。
 
 由于目前本项目仅作为个人使用，简单地使用 passport 实现了一下注册、登陆认证功能。
+
+[快照](https://github.com/clutchJoe/fullstack-collectionApp/tree/master/prev)
 
 ## 用到的一些第三方包
 
