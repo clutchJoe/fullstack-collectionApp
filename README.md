@@ -13,7 +13,7 @@ DB_CONNECT=你的MongoDB数据库地址
 
 npm run build
 
-将build好的dist目录下的所有文件和文件夹复制到server/public下
+将build好的dist文件夹复制到server/public下
 ```
 
 ```bash

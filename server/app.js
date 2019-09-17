@@ -50,7 +50,8 @@ app.use("/notes", require("./routes/notesAPI"));
 app.use("/links", require("./routes/linkAPI"));
 
 // Setup static floder
-app.use(checkAuthenticated, express.static(__dirname + "/public/"));
+app.use(checkAuthenticated, express.static(__dirname + "/public/dist/"));
+// app.use(express.static(__dirname + "/public/"));
 
 app.use((err, req, res, next) => {
     if (err.code === "Incorrect File Type") {
@@ -94,18 +95,19 @@ app.get("/image/:filename", (req, res) => {
     });
 });
 
-// app.get("/see/:filename", (req, res) => {
-//     gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
-//         if (!file || file.length === 0) {
-//             return res.status(404).json({
-//                 err: "No file exists"
-//             });
-//         }
-//         const readstream = gfs.createReadStream(file.filename);
-//         console.log(readstream);
-//         readstream.pipe(res);
-//     });
-// });
+// file download route
+app.post("/download/:filename", (req, res) => {
+    gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
+        if (!file || file.length === 0) {
+            return res.status(404).json({
+                err: "No file exists"
+            });
+        }
+        const readstream = gfs.createReadStream(file.filename);
+        // console.log(readstream);
+        readstream.pipe(res);
+    });
+});
 
 app.delete("/files/:id", (req, res) => {
     gfs.remove({ _id: req.params.id, root: "uploads" }, (err, gridStore) => {
