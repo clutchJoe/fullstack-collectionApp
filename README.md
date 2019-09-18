@@ -38,7 +38,7 @@ npm start
 
 ## 路由 API
 
-[API]()
+[API](https://github.com/clutchJoe/fullstack-collectionApp/blob/master/router.md)
 
 ## 用到的一些第三方包
 
