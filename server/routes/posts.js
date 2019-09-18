@@ -1,4 +1,6 @@
 const express = require("express");
+const cheerio = require("cheerio");
+const rp = require("request-promise");
 
 const fileSchema = require("../models/uploadsFiles");
 const linkSchema = require("../models/uploadLink");
@@ -11,81 +13,72 @@ const router = express.Router();
 // Upload file route
 router.post("/file", fileUpload.single("file"), (req, res) => {
     const allowTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/svg+xml", "image/x-icon"];
-    // res.json({ file: req.file, desc: req.body.text });
-
     // upload使用single时
     if (allowTypes.includes(req.file.contentType)) {
-        fileSchema.updateOne(
-            { _id: req.file.id },
-            { description: req.body.text, originalname: req.file.originalname, isImg: true },
-            (err, raw) => {
-                console.log(raw);
-            }
-        );
+        fileSchema
+            .updateOne({ _id: req.file.id }, { description: req.body.text, originalname: req.file.originalname, isImg: true })
+            .exec();
     } else {
-        fileSchema.updateOne(
-            { _id: req.file.id },
-            { description: req.body.text, originalname: req.file.originalname, isImg: false },
-            (err, raw) => {
-                console.log(raw);
-            }
-        );
+        fileSchema
+            .updateOne({ _id: req.file.id }, { description: req.body.text, originalname: req.file.originalname, isImg: false })
+            .exec();
     }
     res.status(200).send();
-    // upload使用array时
-    // req.files.forEach(file => {
-    //     fileSchema.updateOne(
-    //         { _id: file.id },
-    //         { description: req.body.text, originalname: file.originalname },
-    //         (err, raw) => {
-    //             console.log(raw);
-    //         }
-    //     );
-    // });
-
-    // console.log(req.file, req.body.text);
 });
 
-router.post("/image", imageUpload.single("image"), (req, res) => {
+router.post("/image", imageUpload.array("image", 5), (req, res) => {
     const allowTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/svg+xml", "image/x-icon"];
-    // res.json({ file: req.file, desc: req.body.text });
-
-    // upload使用single时;
-    if (allowTypes.includes(req.file.contentType)) {
-        fileSchema.updateOne(
-            { _id: req.file.id },
-            { description: req.body.text, originalname: req.file.originalname, isImg: true },
-            (err, raw) => {
-                console.log(raw);
-            }
-        );
-    } else {
-        fileSchema.updateOne(
-            { _id: req.file.id },
-            { description: req.body.text, originalname: req.file.originalname, isImg: false },
-            (err, raw) => {
-                console.log(raw);
-            }
-        );
-    }
+    // upload使用array时
+    req.files.forEach(file => {
+        if (allowTypes.includes(file.contentType)) {
+            fileSchema
+                .updateOne({ _id: file.id }, { description: req.body.text, originalname: file.originalname, isImg: true })
+                .exec();
+        } else {
+            fileSchema
+                .updateOne({ _id: file.id }, { description: req.body.text, originalname: file.originalname, isImg: false })
+                .exec();
+        }
+    });
     res.status(200).send();
 });
 
 router.post("/link", fileUpload.none(), async (req, res) => {
-    const post = new linkSchema({
-        link: req.body.link,
-        description: req.body.text
-    });
-    try {
-        const savePost = await post.save();
-        res.status(200).send();
-    } catch (err) {
-        res.json({ message: err });
-    }
+    const options = {
+        uri: req.body.link,
+        transform: function(body) {
+            return cheerio.load(body);
+        }
+    };
+    rp(options)
+        .then(function($) {
+            const text = $("head > title").text();
+            return text;
+        })
+        .then(text => {
+            let domain = "";
+            const arr = req.body.link.split("/");
+            if (arr[2].startsWith("www.")) {
+                domain = arr[2].slice(4);
+            } else {
+                domain = arr[2];
+            }
+            const post = new linkSchema({
+                link: req.body.link,
+                domain: domain,
+                title: text,
+                description: req.body.text
+            });
+            return post;
+        })
+        .then(post => {
+            post.save();
+            res.status(200).send();
+        })
+        .catch(err => res.json({ message: err }));
 });
 
 router.post("/note", fileUpload.none(), async (req, res) => {
-    // res.send(req.body);
     const post = new notesSchema({
         topic: req.body.topic,
         note: req.body.text

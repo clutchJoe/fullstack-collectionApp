@@ -51,7 +51,6 @@ app.use("/links", require("./routes/linkAPI"));
 
 // Setup static floder
 app.use(checkAuthenticated, express.static(__dirname + "/public/dist/"));
-// app.use(express.static(__dirname + "/public/"));
 
 app.use((err, req, res, next) => {
     if (err.code === "Incorrect File Type") {
@@ -104,7 +103,6 @@ app.post("/download/:filename", (req, res) => {
             });
         }
         const readstream = gfs.createReadStream(file.filename);
-        // console.log(readstream);
         readstream.pipe(res);
     });
 });

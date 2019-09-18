@@ -1,11 +1,11 @@
 const express = require("express");
 
-const linksSchema = require("../models/uploadLink");
+const linkSchema = require("../models/uploadLink");
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-    const data = await linksSchema.find((err, doc) => {
+    const data = await linkSchema.find((err, doc) => {
         if (err) throw err;
         return doc;
     });
@@ -13,11 +13,10 @@ router.get("/", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
-    const data = await linksSchema.findByIdAndRemove(req.params.id, (err, doc) => {
+    await linkSchema.findByIdAndRemove(req.params.id, (err, doc) => {
         if (err) throw err;
         return doc;
     });
-    console.log(data);
     res.status(200).send();
 });
 

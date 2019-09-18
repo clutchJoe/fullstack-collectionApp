@@ -12,9 +12,6 @@ const bodyParser = express.urlencoded({ extended: false });
 // router.get("/dashboard", checkAuthenticated, (req, res) => {
 //     res.render("dashboard");
 // });
-// router.get("/", checkAuthenticated, (req, res) => {
-//     res.sendFile(__dirname + "/public/dist/index.html");
-// });
 
 router.get("/login", checkNotAuthenticated, (req, res) => {
     res.render("login");
@@ -50,9 +47,8 @@ router.delete("/logout", (req, res) => {
     try {
         req.logOut();
         res.redirect("/login");
-        // console.log("Succfully logout !");
     } catch (err) {
-        console.log(err);
+        throw err;
     }
 });
 

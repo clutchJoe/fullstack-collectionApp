@@ -1,8 +1,15 @@
 const mongoose = require("mongoose");
 
-const linksSchema = new mongoose.Schema(
+const linkSchema = new mongoose.Schema(
     {
         link: String,
+        domain: {
+            type: String,
+            required: true
+        },
+        title: {
+            type: String
+        },
         description: String,
         createdAt: {
             type: Date,
@@ -12,4 +19,4 @@ const linksSchema = new mongoose.Schema(
     { collection: "links" }
 );
 
-module.exports = mongoose.model("linksSchema", linksSchema, "links");
+module.exports = mongoose.model("linkSchema", linkSchema, "links");

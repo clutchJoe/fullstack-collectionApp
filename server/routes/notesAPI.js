@@ -13,11 +13,10 @@ router.get("/", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
-    const data = await notesSchema.findByIdAndRemove(req.params.id, (err, doc) => {
+    await notesSchema.findByIdAndRemove(req.params.id, (err, doc) => {
         if (err) throw err;
         return doc;
     });
-    console.log(data);
     res.status(200).send();
 });
 

@@ -36,6 +36,10 @@ npm start
 
 [快照](https://github.com/clutchJoe/fullstack-collectionApp/tree/master/prev)
 
+## 路由 API
+
+[API]()
+
 ## 用到的一些第三方包
 
 [multer-gridfs-storage](https://github.com/devconcept/multer-gridfs-storage)：初始化 multer storage，以及对文件名重新随机命名，避免同名
@@ -54,10 +58,11 @@ npm start
 
 ## Todo
 
--   [✔] 文件上传、删除
--   [✔] 笔记上传、删除
--   [✔] 注册、登陆
--   [ ] 图片上传、删除
--   [ ] 链接上传、删除
--   [ ] 增加 Edit 功能以及文件下载
+-   [x] 文件上传、删除
+-   [x] 笔记上传、删除
+-   [x] 注册、登陆
+-   [x] 图片上传、删除
+-   [x] 链接上传、删除
+-   [x] 文件、图片下载
+-   [ ] 增加 Edit 功能
 -   [ ] 完善前端构建和注册、登陆功能
