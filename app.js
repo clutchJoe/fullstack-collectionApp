@@ -9,9 +9,9 @@ const passport = require("passport");
 const methodOverride = require("method-override");
 const flash = require("express-flash");
 
-const { checkAuthenticated } = require("./config/auth");
+const { checkAuthenticated } = require("./server/config/auth");
 
-const connectDB = require("./config/connectDB");
+const connectDB = require("./server/config/connectDB");
 // Connect to MongoDB
 connectDB();
 
@@ -22,7 +22,7 @@ const options = {
     extensions: ["htm", "html"]
 };
 
-require("./config/passport")(passport);
+require("./server/config/passport")(passport);
 app.use(methodOverride("_method"));
 app.use(expressLayouts);
 app.set("view engine", "ejs");
@@ -45,14 +45,14 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use("/", require("./routes/user"));
-app.use("/post", require("./routes/posts"));
-app.use("/files", require("./routes/filesAPI"));
-app.use("/notes", require("./routes/notesAPI"));
-app.use("/links", require("./routes/linkAPI"));
+app.use("/", require("./server/routes/user"));
+app.use("/post", require("./server/routes/posts"));
+app.use("/files", require("./server/routes/filesAPI"));
+app.use("/notes", require("./server/routes/notesAPI"));
+app.use("/links", require("./server/routes/linkAPI"));
 
 // Setup static floder
-app.use(checkAuthenticated, express.static(__dirname + "/public/dist/"));
+app.use(checkAuthenticated, express.static(__dirname + "/server/public/dist/"));
 
 app.use((err, req, res, next) => {
     if (err.code === "Incorrect File Type") {
@@ -74,7 +74,7 @@ conn.once("open", () => {
     gfs.collection("uploads");
 });
 
-// app.get("/", checkAuthenticated, (req, res) => res.sendFile(__dirname + "/public/dist/index.html"));
+app.get(/.*/, checkAuthenticated, (req, res) => res.sendFile(__dirname + "/server/public/dist/index.html"));
 
 app.get("/image/:filename", (req, res) => {
     gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
