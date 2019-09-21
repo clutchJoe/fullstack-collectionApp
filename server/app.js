@@ -7,6 +7,7 @@ const expressLayouts = require("express-ejs-layouts");
 const session = require("express-session");
 const passport = require("passport");
 const methodOverride = require("method-override");
+const flash = require("express-flash");
 
 const { checkAuthenticated } = require("./config/auth");
 
@@ -23,12 +24,13 @@ const options = {
 
 require("./config/passport")(passport);
 app.use(methodOverride("_method"));
-app.set("view engine", "ejs");
 app.use(expressLayouts);
+app.set("view engine", "ejs");
 
 // Use Middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use(flash());
 
 //Express Session
 app.use(
